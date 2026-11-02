@@ -1,0 +1,7 @@
+﻿job_level_id,level_name_en,level_name_fr,level_order
+JL1,Analyst / Associate,Analyste / Associé,1
+JL2,Specialist,Spécialiste,2
+JL3,Senior Specialist,Spécialiste principal,3
+JL4,Manager,Gestionnaire,4
+JL5,Director,Directeur,5
+JL6,Vice-President,Vice-président,6

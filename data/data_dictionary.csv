@@ -1,0 +1,75 @@
+﻿table,column,data_type,description
+employees,employee_id,text,"Synthetic employee key, for example E00001. Not a real identifier."
+employees,hire_date,date,First day of work. ISO format YYYY-MM-DD.
+employees,termination_date,date,Last day of work. Blank when the employee is still active at the end of the data.
+employees,termination_type,text,voluntary (employee chose to leave) or involuntary (employer decision). Blank when active.
+employees,department_id,text,Key to departments.department_id.
+employees,job_level_id,text,Key to job_levels.job_level_id.
+employees,location_id,text,Key to locations.location_id.
+employees,manager_id,text,"employee_id of the manager. Blank for Vice-Presidents, who sit at the top of this fictional hierarchy."
+employees,employment_type,text,"Full-time, Part-time or Contract. Drives scheduled hours per day (7.5, 4.5, 7.5)."
+employees,language_preference,text,"FR or EN. Blank when not recorded (about 1 percent of employees, a planted data quality issue)."
+departments,department_id,text,"Department key, D01 to D10."
+departments,department_name_en,text,Department name in English.
+departments,department_name_fr,text,Department name in French.
+locations,location_id,text,"Location key, L01 to L04."
+locations,city_en,text,City name in English.
+locations,city_fr,text,City name in French.
+locations,province,text,Two letter province code.
+job_levels,job_level_id,text,"Job level key, JL1 to JL6."
+job_levels,level_name_en,text,Level name in English.
+job_levels,level_name_fr,text,Level name in French.
+job_levels,level_order,integer,"1 is the most junior level, 6 the most senior. Use for sorting."
+dates,date_key,integer,Date as YYYYMMDD.
+dates,date,date,Calendar date.
+dates,year,integer,Calendar year.
+dates,quarter_number,integer,Quarter 1 to 4.
+dates,quarter_label,text,"Year and quarter, for example 2026-Q3."
+dates,month_number,integer,Month 1 to 12.
+dates,year_month,text,"Year and month, for example 2026-09. Sorts correctly as text."
+dates,month_name_en,text,Month name in English.
+dates,month_name_fr,text,Month name in French.
+dates,day_name_en,text,Weekday name in English.
+dates,is_weekday,integer,"1 for Monday to Friday, else 0. Statutory holidays are not modelled."
+dates,month_end_date,date,Last calendar day of the month of this date.
+dates,is_month_end,integer,1 when this date is the last day of its month.
+dates,is_in_data_range,integer,1 when the date is on or before the as-of date of the data (2026-09-30).
+absences,employee_id,text,Key to employees.employee_id.
+absences,date,date,Day of the absence. One row per employee per day.
+absences,type,text,"Sick, Family, Personal or Vacation."
+absences,hours,decimal,"Hours absent that day. A full day is the employee's daily scheduled hours, a half day is half of it."
+requisitions,requisition_id,text,"Requisition key, for example R00001."
+requisitions,open_date,date,Date the role was opened.
+requisitions,department_id,text,Key to departments.department_id.
+requisitions,location_id,text,Key to locations.location_id.
+requisitions,job_level_id,text,Key to job_levels.job_level_id.
+requisitions,employment_type,text,"Full-time, Part-time or Contract."
+requisitions,reason,text,Backfill (replaces a departure) or Growth (new role).
+requisitions,status,text,"Filled, Open (not yet filled at the as-of date) or Cancelled."
+requisitions,filled_date,date,Start date of the person hired. Blank unless status is Filled.
+requisitions,days_to_fill,integer,Calendar days from open_date to filled_date. Blank unless status is Filled.
+fact_headcount_snapshot,snapshot_date,date,Last day of the month. One row per employee who was employed at any point in that month.
+fact_headcount_snapshot,employee_id,text,"Key to employees.employee_id. Hidden in the Power BI model, never shown in visuals."
+fact_headcount_snapshot,department_id,text,Key to departments.department_id.
+fact_headcount_snapshot,location_id,text,Key to locations.location_id.
+fact_headcount_snapshot,job_level_id,text,Key to job_levels.job_level_id.
+fact_headcount_snapshot,employment_type,text,"Full-time, Part-time or Contract."
+fact_headcount_snapshot,active_at_month_end,integer,"1 if still employed after the last day of the month, else 0. Headcount is the sum of this column."
+fact_headcount_snapshot,hired_in_month,integer,1 if the hire_date falls in this month. Hires is the sum of this column.
+fact_headcount_snapshot,scheduled_hours,decimal,Weekday count while employed in the month times daily hours. Denominator of the absence rate.
+fact_terminations,employee_id,text,Key to employees.employee_id. Hidden in the Power BI model.
+fact_terminations,termination_date,date,Last day of work.
+fact_terminations,termination_type,text,voluntary or involuntary.
+fact_terminations,department_id,text,Key to departments.department_id.
+fact_terminations,location_id,text,Key to locations.location_id.
+fact_terminations,job_level_id,text,Key to job_levels.job_level_id.
+fact_terminations,employment_type,text,"Full-time, Part-time or Contract."
+fact_terminations,tenure_months,integer,Whole months between hire_date and termination_date.
+fact_absences,employee_id,text,Key to employees.employee_id. Hidden in the Power BI model.
+fact_absences,date,date,Day of the absence.
+fact_absences,type,text,"Sick, Family, Personal or Vacation."
+fact_absences,hours,decimal,Hours absent that day.
+fact_absences,department_id,text,Key to departments.department_id.
+fact_absences,location_id,text,Key to locations.location_id.
+fact_absences,job_level_id,text,Key to job_levels.job_level_id.
+fact_absences,counts_in_absence_rate,integer,"1 for Sick, Family and Personal, 0 for Vacation. Vacation is planned leave and is not an absence for the rate."

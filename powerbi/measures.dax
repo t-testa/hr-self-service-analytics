@@ -1,0 +1,287 @@
+// =====================================================================
+// HR Self-Service Analytics: DAX measures
+// Fictional company: Laurentian Financial Group. All data is synthetic.
+//
+// Create a table named _Measures (Home > Enter data, one empty column, then hide the column)
+// and add every measure below to it. Display folders are given in the comments.
+//
+// Conventions
+//   [Name (raw)]   numeric, no privacy rule. Hidden in the report. Used inside other measures.
+//   [Name]         numeric, BLANK when the group is below the minimum group size. Use in charts.
+//   [Name Text]    text or formatted value, shows "Not enough data" below the minimum. Use in cards, tables, matrices.
+//
+// IMPORTANT: use Year, Quarter and Month fields from dim_date on slicers and axes.
+// Do not use a day level date range slicer. The snapshot is taken at month end, so a day
+// range that cuts a month would drop the month end rows.
+// =====================================================================
+
+
+// ---------------------------------------------------------------------
+// 0. Configuration and language       (display folder: 0 Config)
+// ---------------------------------------------------------------------
+
+// Language is a disconnected table:  Language = DATATABLE("Code", STRING, "Name", STRING, {{"EN","English"},{"FR","Français"}})
+Min Group Size = 5
+
+Is French = SELECTEDVALUE ( Language[Code], "EN" ) = "FR"
+
+Not Enough Data Label =
+IF ( [Is French], "Données insuffisantes", "Not enough data" )
+
+
+// ---------------------------------------------------------------------
+// 1. Period helpers                   (display folder: 1 Helpers)
+// ---------------------------------------------------------------------
+
+// Number of month ends with data inside the current date filter (on or before the as-of date).
+// Used to annualize rates: a quarter has 3, a full year 12, 2026 year to date has 9.
+Months In Period =
+COUNTROWS (
+    FILTER ( VALUES ( dim_date[date] ), dim_date[is_month_end] = 1 && dim_date[is_in_data_range] = 1 )
+)
+
+
+// ---------------------------------------------------------------------
+// 2. Headcount and hires              (display folder: 2 Headcount)
+// ---------------------------------------------------------------------
+
+Headcount (raw) =
+VAR LastMonthEnd =
+    MAXX (
+        FILTER ( VALUES ( dim_date[date] ), dim_date[is_month_end] = 1 && dim_date[is_in_data_range] = 1 ),
+        dim_date[date]
+    )
+RETURN
+    CALCULATE (
+        SUM ( fact_headcount_snapshot[active_at_month_end] ),
+        dim_date[date] = LastMonthEnd
+    )
+
+// Average of the month end headcounts in the period. Months with no rows count as 0.
+Average Headcount (raw) =
+AVERAGEX (
+    FILTER ( VALUES ( dim_date[date] ), dim_date[is_month_end] = 1 && dim_date[is_in_data_range] = 1 ),
+    COALESCE ( CALCULATE ( SUM ( fact_headcount_snapshot[active_at_month_end] ) ), 0 )
+)
+
+// Group size used by the privacy rule: the smaller of average and period end headcount.
+Group Size =
+MIN ( [Average Headcount (raw)], [Headcount (raw)] )
+
+Group Is Visible =
+[Group Size] >= [Min Group Size]
+
+Hires (raw) =
+SUM ( fact_headcount_snapshot[hired_in_month] )
+
+
+// ---------------------------------------------------------------------
+// 3. Terminations and turnover        (display folder: 3 Turnover)
+// ---------------------------------------------------------------------
+
+Voluntary Terminations (raw) =
+CALCULATE ( COUNTROWS ( fact_terminations ), fact_terminations[termination_type] = "voluntary" )
+
+Involuntary Terminations (raw) =
+CALCULATE ( COUNTROWS ( fact_terminations ), fact_terminations[termination_type] = "involuntary" )
+
+// Annualized: exits / average headcount * 12 / months in the period.
+Voluntary Turnover Rate (raw) =
+DIVIDE ( [Voluntary Terminations (raw)], [Average Headcount (raw)] ) * 12 / [Months In Period]
+
+Involuntary Turnover Rate (raw) =
+DIVIDE ( [Involuntary Terminations (raw)], [Average Headcount (raw)] ) * 12 / [Months In Period]
+
+
+// ---------------------------------------------------------------------
+// 4. Absences                         (display folder: 4 Absences)
+// ---------------------------------------------------------------------
+
+// Unplanned hours only (Sick, Family, Personal). Vacation has counts_in_absence_rate = 0.
+Unplanned Absence Hours (raw) =
+CALCULATE ( SUM ( fact_absences[hours] ), fact_absences[counts_in_absence_rate] = 1 )
+
+Scheduled Hours (raw) =
+SUM ( fact_headcount_snapshot[scheduled_hours] )
+
+Absence Rate (raw) =
+DIVIDE ( [Unplanned Absence Hours (raw)], [Scheduled Hours (raw)] )
+
+
+// ---------------------------------------------------------------------
+// 5. Recruiting                       (display folder: 5 Recruiting)
+// ---------------------------------------------------------------------
+
+Filled Requisitions (raw) =
+CALCULATE ( COUNTROWS ( fact_requisitions ), fact_requisitions[status] = "Filled" )
+
+Average Time To Fill (raw) =
+CALCULATE ( AVERAGE ( fact_requisitions[days_to_fill] ), fact_requisitions[status] = "Filled" )
+
+Open Requisitions (raw) =
+CALCULATE ( COUNTROWS ( fact_requisitions ), fact_requisitions[status] = "Open" )
+
+// Time to fill is hidden when fewer than 5 requisitions were filled.
+Time To Fill Is Visible =
+[Filled Requisitions (raw)] >= [Min Group Size]
+
+
+// ---------------------------------------------------------------------
+// 6. Privacy aware measures: numeric (for charts, BLANK when hidden)
+//                                     (display folder: 6 Report numeric)
+// ---------------------------------------------------------------------
+
+Headcount =
+IF ( [Group Is Visible], [Headcount (raw)] )
+
+Hires =
+IF ( [Group Is Visible], [Hires (raw)] )
+
+Voluntary Terminations =
+IF ( [Group Is Visible], [Voluntary Terminations (raw)] )
+
+Involuntary Terminations =
+IF ( [Group Is Visible], [Involuntary Terminations (raw)] )
+
+Voluntary Turnover Rate =
+IF ( [Group Is Visible], [Voluntary Turnover Rate (raw)] )
+
+Involuntary Turnover Rate =
+IF ( [Group Is Visible], [Involuntary Turnover Rate (raw)] )
+
+Absence Rate =
+IF ( [Group Is Visible], [Absence Rate (raw)] )
+
+Average Time To Fill =
+IF ( [Time To Fill Is Visible], [Average Time To Fill (raw)] )
+
+
+// ---------------------------------------------------------------------
+// 7. Privacy aware measures: text (for cards, tables, matrices)
+//    These show "Not enough data" instead of a number.
+//                                     (display folder: 7 Report text)
+// ---------------------------------------------------------------------
+
+Headcount Text =
+IF ( [Group Is Visible], FORMAT ( [Headcount (raw)], "#,0" ), [Not Enough Data Label] )
+
+Hires Text =
+IF ( [Group Is Visible], FORMAT ( [Hires (raw)], "#,0" ), [Not Enough Data Label] )
+
+Voluntary Turnover Rate Text =
+IF ( [Group Is Visible], FORMAT ( [Voluntary Turnover Rate (raw)], "0.0%" ), [Not Enough Data Label] )
+
+Involuntary Turnover Rate Text =
+IF ( [Group Is Visible], FORMAT ( [Involuntary Turnover Rate (raw)], "0.0%" ), [Not Enough Data Label] )
+
+Absence Rate Text =
+IF ( [Group Is Visible], FORMAT ( [Absence Rate (raw)], "0.0%" ), [Not Enough Data Label] )
+
+Average Time To Fill Text =
+IF ( [Time To Fill Is Visible], FORMAT ( [Average Time To Fill (raw)], "0.0" ), [Not Enough Data Label] )
+
+// Use as a chart or page subtitle. Empty when the selection is large enough.
+Privacy Notice =
+IF (
+    [Group Is Visible],
+    BLANK (),
+    IF ( [Is French],
+        "Moins de 5 employés dans la sélection : les valeurs sont masquées.",
+        "Fewer than 5 employees in the selection: values are hidden."
+    )
+)
+
+Privacy Footnote =
+IF ( [Is French],
+    "Les groupes de moins de 5 employés sont masqués. Données synthétiques.",
+    "Groups with fewer than 5 employees are hidden. Synthetic data."
+)
+
+
+// ---------------------------------------------------------------------
+// 8. Titles (bilingual)               (display folder: 8 Titles)
+// ---------------------------------------------------------------------
+
+Title Headcount = IF ( [Is French], "Effectif", "Headcount" )
+Title Hires = IF ( [Is French], "Embauches", "Hires" )
+Title Voluntary Turnover = IF ( [Is French], "Roulement volontaire (annualisé)", "Voluntary turnover (annualized)" )
+Title Involuntary Turnover = IF ( [Is French], "Roulement involontaire (annualisé)", "Involuntary turnover (annualized)" )
+Title Absence Rate = IF ( [Is French], "Taux d'absentéisme", "Absence rate" )
+Title Time To Fill = IF ( [Is French], "Délai moyen de dotation (jours)", "Average time to fill (days)" )
+
+
+// ---------------------------------------------------------------------
+// 9. Data quality page                (display folder: 9 Data quality)
+//    dq_employee is loaded from employees.csv for these counts only.
+//    It has no relationships, employee_id is hidden, and no visual shows its rows.
+// ---------------------------------------------------------------------
+
+DQ Employees Loaded = COUNTROWS ( dq_employee )
+
+DQ Missing Language Preference =
+COUNTROWS ( FILTER ( dq_employee, ISBLANK ( dq_employee[language_preference] ) ) )
+// Expected above 0 (planted issue, about 1 percent).
+
+DQ Missing Language Share =
+DIVIDE ( [DQ Missing Language Preference], [DQ Employees Loaded] )
+
+DQ Terminated Before Hire =
+COUNTROWS ( FILTER ( dq_employee, NOT ISBLANK ( dq_employee[termination_date] ) && dq_employee[termination_date] <= dq_employee[hire_date] ) )
+// Expected 0.
+
+DQ Terminated Without Type =
+COUNTROWS ( FILTER ( dq_employee, NOT ISBLANK ( dq_employee[termination_date] ) && ISBLANK ( dq_employee[termination_type] ) ) )
+// Expected 0.
+
+DQ Active With Termination Type =
+COUNTROWS ( FILTER ( dq_employee, ISBLANK ( dq_employee[termination_date] ) && NOT ISBLANK ( dq_employee[termination_type] ) ) )
+// Expected 0.
+
+DQ Missing Manager Below VP =
+COUNTROWS ( FILTER ( dq_employee, ISBLANK ( dq_employee[manager_id] ) && dq_employee[job_level_id] <> "JL6" ) )
+// Expected 0. Vice-Presidents have no manager in this fictional hierarchy.
+
+DQ Manager Not In Employees =
+COUNTROWS (
+    FILTER (
+        dq_employee,
+        NOT ISBLANK ( dq_employee[manager_id] )
+            && ISBLANK ( LOOKUPVALUE ( dq_employee[employee_id], dq_employee[employee_id], dq_employee[manager_id] ) )
+    )
+)
+// Expected 0.
+
+DQ Snapshot Rows Without Department =
+COUNTROWS ( FILTER ( fact_headcount_snapshot, ISBLANK ( RELATED ( dim_department[department_id] ) ) ) )
+// Expected 0. Same check can be repeated for location and job level.
+
+// Reconciliation: active employees in the employee table must equal the last snapshot headcount.
+DQ Active Employees In Employee Table =
+COUNTROWS ( FILTER ( dq_employee, ISBLANK ( dq_employee[termination_date] ) ) )
+
+DQ Headcount At Last Snapshot =
+CALCULATE ( [Headcount (raw)], ALL ( dim_date ), dim_date[date] = DATE ( 2026, 9, 30 ) )
+// Replace the date if you regenerate the data with a different as-of date.
+
+DQ Reconciliation Difference =
+[DQ Active Employees In Employee Table] - [DQ Headcount At Last Snapshot]
+// Expected 0.
+
+// Number of department and location combinations hidden by the privacy rule in the current period.
+DQ Suppressed Department x Location =
+COUNTROWS (
+    FILTER (
+        CROSSJOIN ( VALUES ( dim_department[department_id] ), VALUES ( dim_location[location_id] ) ),
+        [Group Size] < [Min Group Size]
+    )
+)
+// For 2026-Q3 the reference calculation shows 1 (Legal | Quebec City).
+
+DQ Status =
+IF (
+    [DQ Terminated Before Hire] + [DQ Terminated Without Type] + [DQ Active With Termination Type]
+        + [DQ Missing Manager Below VP] + [DQ Manager Not In Employees]
+        + [DQ Snapshot Rows Without Department] + ABS ( [DQ Reconciliation Difference] ) = 0,
+    "Checks passed (except known planted issue: language preference)",
+    "Review needed"
+)

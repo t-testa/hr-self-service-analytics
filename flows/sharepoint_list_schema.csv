@@ -1,0 +1,15 @@
+internal_name,type,required,choices_or_default,purpose
+Title,Single line of text,Yes,,Short request title
+RequestType,Choice,Yes,Turnover report; Absence report; Recruiting report; Headcount report; Other,What is asked
+Department,Choice,Yes,Retail Banking; Commercial Banking; Wealth Management; Operations; Technology; Risk and Compliance; Finance; Human Resources; Marketing; Legal; Whole company,Scope
+Period,Choice,Yes,Latest quarter; Last 4 quarters; Calendar year 2025; Calendar year 2026 to date; Other,Time frame
+BusinessReason,Multiple lines of text (plain),Yes,,Purpose (privacy rule P5)
+Language,Choice,Yes,EN; FR (default EN),Language of the answer
+Status,Choice,Yes,New; Pending approval; Approved; Rejected; Delivered; Error (default New),Shows each step of the flow
+RequesterEmail,Single line of text,No,,Filled by the agent helper flow; empty for form requests
+Source,Choice,No,Form; Agent (default Form),Where the request came from
+ApprovalComments,Multiple lines of text (plain),No,,Approver comments or rejection reason
+DecisionBy,Single line of text,No,,Approver display name
+DecisionOn,Date and time,No,,When the decision was made
+ErrorDetails,Multiple lines of text (plain),No,,Written by the error scope
+FlowRunLink,Single line of text,No,,Link to the flow run

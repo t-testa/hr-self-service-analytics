@@ -1,0 +1,11 @@
+﻿department_id,department_name_en,department_name_fr
+D01,Retail Banking,Services bancaires aux particuliers
+D02,Commercial Banking,Services bancaires aux entreprises
+D03,Wealth Management,Gestion de patrimoine
+D04,Operations,Opérations
+D05,Technology,Technologie
+D06,Risk and Compliance,Risques et conformité
+D07,Finance,Finance
+D08,Human Resources,Ressources humaines
+D09,Marketing,Marketing
+D10,Legal,Affaires juridiques
