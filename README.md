@@ -186,7 +186,7 @@ The exported solution will be unpacked with the Power Platform CLI into `solutio
 - **Time to fill** counts to the start date and is biased low for the most recent period, because slow requisitions are still open.
 - **Group size rule limits.** It protects small populations, not small event counts in groups just above 5.
 - **No integration with SAP SuccessFactors** or any real HR system.
-- **Not yet verified in the tenant:** The SharePoint list and the Excel KPI table were built in a tenant and the Excel values were checked against the reference calculation (Operations 0.375469, Marketing 0.470588). The flow expressions, DAX measures and agent behavior are designed and reasoned but have not been run in Power Automate, Power BI or Copilot Studio. The reference calculation, the tests and the Excel check are the only parts that have been executed.** DAX measures, flow expressions and agent behavior are designed and reasoned but have not been run in Power BI, Power Automate or Copilot Studio at the time of writing. The reference calculation and tests are the only parts that have been executed.
+- **Tenant verification is partial.** The SharePoint list and Excel KPI table were built in a tenant, and Excel values were checked against the reference calculation (Operations 0.375469, Marketing 0.470588). The Python reference calculation, automated tests and Excel checks have been executed. End-to-end Power Automate runs, Power BI DAX/report verification and Copilot Studio agent evaluation remain to be completed.
 
 ## Repository structure
 
