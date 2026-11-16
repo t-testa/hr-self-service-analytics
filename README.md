@@ -12,10 +12,13 @@ An HR analytics toolkit for a **fictional** company, Laurentian Financial Group 
 | Independent reference KPI calculation with minimum group size 5 | **Done**, tested |
 | Automated tests (pytest) | **Done** |
 | Power BI model, DAX measures, report specification | **Designed.** The report itself is to be completed (built in Power BI Desktop from `powerbi/`) |
-| Three Power Automate flows (design files, list schema, Excel table layout) | **Designed.** SharePoint list and Excel KPI workbook **built in a Microsoft 365 tenant and checked against the reference numbers**. Flow 1 is partly built (trigger, error scopes, status update, approval). The flows have not been run end to end. |
-| Copilot Studio agent (instructions, knowledge, 25 test prompts) | **Designed.** Agent built and evaluated: to be completed |
+| Flow 1: HR data request with approval (SharePoint, Approvals, Outlook, Try/Catch error scope) | **Built and tested in a Microsoft 365 tenant.** Approve and reject paths ran Succeeded; a real first-run failure was caught by the Catch scope and fixed (see `docs/04_results.md`) |
+| Flows 2 and 3 (weekly digest, threshold alert) | **Designed** (`flows/`). Not built yet |
+| SharePoint list and Excel KPI table | **Built in the tenant**, Excel checked against the reference numbers |
+| Copilot Studio agent (instructions, knowledge, 25 test prompts) | **Designed**, build in progress. Not evaluated yet |
 | Governance, requirements, evaluation plan | **Done** |
-| Evaluation results | **To be completed** (`docs/04_results.md` is an empty template) |
+| Consulting layer: discovery and process maps, adoption plan, value measurement, UAT script, executive briefing | **Done** (`docs/05` to `docs/09`) |
+| Results | **Partly completed**: Flow 1 runs and the first failure are recorded in `docs/04_results.md`; agent results to be completed |
 
 Nothing below claims a flow, report or agent result that has not been observed. See [Limitations](#honest-limitations).
 
@@ -168,7 +171,11 @@ Plan and thresholds were written before any testing: `docs/03_evaluation.md`, `a
 
 ## Power Automate flows
 
-**To be completed.** Designs are in `flows/`. Each flow will be built in the solution `HRSelfService` in a Power Apps Developer Plan environment, and added here only after a test run shows Succeeded:
+Built in the solution `HRSelfService` in a Power Apps Developer Plan environment. A flow is listed as built only after a test run showed Succeeded.
+
+**Flow 1, built and tested (2026-11-16).** A new item in the `HR Data Requests` list sets the status to Pending approval and sends an approval to the HR analytics lead (3-day timeout). Approve: status Approved with decision, approver and date, bilingual email with the report link, status Delivered. Reject: status Rejected with the reason, bilingual email with the reason. Any failure in the Try scope runs the Catch scope: status Error with the error details and a link to the run, owner email, run marked Failed. Evidence and the first failure are in `docs/04_results.md`. Known simplification: the report link and owner email are literal values for now, not environment variables (see results, section 4).
+
+Design files for all three:
 
 1. HR data request with approval (SharePoint, Approvals, error handling scope)
 2. Monday bilingual KPI digest (schedule, Excel, email and Teams)
@@ -186,7 +193,7 @@ The exported solution will be unpacked with the Power Platform CLI into `solutio
 - **Time to fill** counts to the start date and is biased low for the most recent period, because slow requisitions are still open.
 - **Group size rule limits.** It protects small populations, not small event counts in groups just above 5.
 - **No integration with SAP SuccessFactors** or any real HR system.
-- **Tenant verification is partial.** The SharePoint list and Excel KPI table were built in a tenant, and Excel values were checked against the reference calculation (Operations 0.375469, Marketing 0.470588). The Python reference calculation, automated tests and Excel checks have been executed. End-to-end Power Automate runs, Power BI DAX/report verification and Copilot Studio agent evaluation remain to be completed.
+- **Tenant verification is partial.** Executed: Python reference calculation and tests, Excel checks against the reference (Operations 0.375469, Marketing 0.470588), Flow 1 approve and reject runs. Not yet run: Flows 2 and 3, the Copilot Studio agent evaluation, the Power BI report.
 
 ## Repository structure
 
@@ -200,7 +207,7 @@ hr-self-service-analytics/
   flows/       design file per flow, shared resources, SharePoint list schema
   solution/    HRSelfService.zip and unpacked/  (to be added after export)
   agent/       instructions.md, agent_setup.md, test_prompts.csv, knowledge/
-  docs/        01_requirements ... 04_results, DECISIONS, TENANT_GUIDE, HANDOFF, images/
+  docs/        01_requirements ... 09_executive_briefing, DECISIONS, TENANT_GUIDE, HANDOFF, images/
   tests/       pytest for the generator and the reference KPIs
 ```
 

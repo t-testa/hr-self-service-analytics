@@ -1,15 +1,15 @@
 # 04. Results
 
-**Status: to be completed.** Nothing in this file has been run yet. Every table below is empty on purpose. Fill it in from the tenant work (`docs/TENANT_GUIDE.md`). Do not fill in a result that was not observed.
+**Status: partly completed (2026-11-16).** Only observed results are recorded. Rows still marked "To be completed" have not been run.
 
 ## 1. Build status
 
 | Item | Status | Date | Evidence (file in `docs/images/`) |
 |---|---|---|---|
-| Developer environment created | To be completed | | |
-| Solution `HRSelfService` created | To be completed | | |
-| SharePoint list and Excel table ready | To be completed | | |
-| Flow 1 (HR data request with approval) test run Succeeded | To be completed | | |
+| Developer environment created | Done | 2026-10-30 | |
+| Solution `HRSelfService` created | Done | 2026-10-31 | |
+| SharePoint list and Excel table ready | Done. Excel checked against reference (Operations 0.375469, Marketing 0.470588) | 2026-11-02 | `03_sharepoint_list.png` |
+| Flow 1 (HR data request with approval) test run Succeeded | Done: approve and reject paths Succeeded; error path observed in a real failure | 2026-11-16 | `flow1_run_approve.png`, `flow1_run_history.png`, `flow1_run_first_failure.png` |
 | Flow 2 (Monday KPI digest) test run Succeeded | To be completed | | |
 | Flow 3 (KPI threshold alert) test run Succeeded | To be completed | | |
 | Power BI report built | To be completed | | |
@@ -81,18 +81,22 @@ Write the honest story here. Typical entries: what failed, the exact prompt, wha
 
 | # | Prompt ID | What failed | Root cause | Fix | Re-run result |
 |---|---|---|---|---|---|
-| 1 | | | | | |
+| 1 | Flow 1, first approve run (16:18) | Run Failed at `Email requester approved`: "The workflow parameter 'Report link (hrss_Reportlink)' is not found". Approval and `Set status approved` had already succeeded. | The environment variables `Report link` and `Flow owner email` were not offered by the dynamic content picker, so they were typed as `parameters('...')` expressions. A hand-typed expression is accepted at design time but does not attach the environment variable to the flow, so it fails at run time. | Replaced both with literal values (SharePoint site URL, owner email). Known follow-up: wire them back to the environment variables through the picker. | Approve path re-run at 16:30: Succeeded. |
+| 2 | Same run, Catch scope | Catch ran as designed (item Status set to Error, ErrorDetails and FlowRunLink filled) but `Email flow owner` failed for the same reason. | Same root cause as #1. | Same fix as #1. | Not re-tested with a forced error yet. |
 
 ## 5. Flow runs
 
 | Flow | Test input | Result | Run duration | Screenshot |
 |---|---|---|---|---|
-| 1. HR data request with approval (approve path) | | | | |
-| 1. HR data request with approval (reject path) | | | | |
-| 1. HR data request with approval (forced error path) | | | | |
+| 1. HR data request with approval (approve path) | Turnover report, Operations, Latest quarter; approved | Succeeded. Status Pending approval, Approved, Delivered; DecisionBy and DecisionOn filled; bilingual email received (no screenshot) | 50 s (including human approval) | `flow1_run_approve.png` |
+| 1. HR data request with approval (reject path) | Absence report, Marketing, Last 4 quarters; rejected with "Please narrow the period" | Succeeded (run at 16:37). Status Rejected, ApprovalComments "Please narrow the period", DecisionBy and DecisionOn filled | 1 min 6 s (including human approval) | `flow1_run_history.png` (run graph not captured) |
+| 1. HR data request with approval (error path) | First approve run, real fault (see section 4) | Failed as expected for a fault: Catch set Status Error with ErrorDetails and FlowRunLink. Owner email failed (same fault). Forced-error re-test not yet run. | 1 min 25 s | `flow1_run_first_failure.png` |
 | 2. Monday KPI digest | | | | |
 | 3. KPI threshold alert | | | | |
 
 ## 6. Lessons and limitations observed during the build
 
-To be completed.
+- In the new Power Automate designer, an environment variable must be inserted from the dynamic content picker. Typing `parameters('...')` passes save but fails at run time.
+- People-picker fields (Approvals "Assigned to", Outlook "To") need the field switched to "Use dynamic content" before a token can be inserted.
+- Copying an action between branches can remap tokens (an Outlook "To" token was remapped to the wrong output after paste). Check every pasted action.
+- The Try/Catch pattern paid off on the first run: the failure was visible on the SharePoint item, not only in run history.
