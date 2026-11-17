@@ -41,6 +41,8 @@ These figures are directional. The real case would be rebuilt from the measured 
 |---|---|---|
 | Reference KPIs reproducible and tested | 30 pytest tests pass | `tests/` |
 | Excel KPI table matches reference | Operations 0.375469, Marketing 0.470588 | `04_results.md` |
-| Flow 1 approve path | Run Succeeded on 2026-11-16 | `04_results.md`, `images/flow1_run_approve.png` |
+| Flow 1 approve and reject paths | Runs Succeeded on 2026-11-16 | `04_results.md`, `images/flow1_run_approve.png` |
+| Agent accuracy on metric questions | 7 of 7 correct (T01 to T07) | `04_results.md` section 3 |
+| Agent refusal of individual-data and out-of-scope questions | 100% after two knowledge fixes; no disclosure in any run | `04_results.md` sections 3 and 4 |
 
-Agent accuracy and refusal rates are added to this table only after the 25 prompts have been run.
+Results come from one run per prompt on 2026-11-17. The request-action prompts (T18 to T23) are not run yet.

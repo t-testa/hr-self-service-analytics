@@ -18,12 +18,16 @@ Copilot Studio changes its menus often. Names below follow the current layout. I
 | Authentication | Authenticate with Microsoft (default for the test chat) |
 | Channels | None published. The agent is used in the **Test your agent** chat only (publishing needs a premium licence). |
 
-## Knowledge (add exactly two sources)
+## Knowledge (three sources)
 
 | Source | File | How |
 |---|---|---|
 | KPI facts | `agent/knowledge/kpi_facts.md` (about 270 KB, one line per period and group) | Knowledge > Add knowledge > Files > upload. Name it "KPI facts". Description: "Aggregated quarterly and yearly HR metrics by department, location, job level. Values below minimum group size are marked NOT ENOUGH DATA." |
 | Metric definitions | `agent/knowledge/metric_definitions.md` | Same. Name "Metric definitions". Description: "Definitions of headcount, hires, exits, turnover, absence rate and time to fill." |
+
+| Privacy and scope policy | `agent/knowledge/assistant_policy.md` | Added after the first test run (see `docs/04_results.md`, section 4). Grounds refusals when ungrounded responses are off. Description: "Approved policy: what the assistant refuses (individuals, small groups, salary, web) and why, and what it offers instead." |
+
+As built on 2026-11-17, the KPI facts source was `agent/knowledge/kpi_facts_current.md` (2026-Q3, 2024, 2025, 2026 YTD only), uploaded as `.txt`.
 
 If the upload rejects `.md`, rename the files to `.txt` (content is plain text) and note it in the results. Wait until both files show as **Ready** before testing. Do not add SharePoint, websites or other sources.
 

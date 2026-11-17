@@ -23,6 +23,6 @@ Fictional client (Laurentian Financial Group), synthetic data. One page for the 
 | Action without consent | Assistant has one action, gated by explicit confirmation and a human approval |
 | Low adoption | Champions, workshop, job aid, office hours, sponsor message |
 
-**Status of the prototype.** Request flow with approval, status tracking and error handling built and tested (approve path run Succeeded). KPI model and privacy rule built and tested. Assistant designed with its evaluation plan; build in progress. Weekly digest designed.
+**Status of the prototype.** Request flow with approval, status tracking and error handling built and tested (approve path run Succeeded). KPI model and privacy rule built and tested. Assistant built in Copilot Studio and evaluated: 19 of 25 test prompts run, all passing after two documented fixes, no individual data disclosed. Request action and weekly digest designed, not yet built.
 
 **Decisions needed.** (1) Approve a 10-week phased rollout. (2) Name the HR analytics lead as process owner. (3) Confirm Copilot Studio licensing for the pilot group. (4) Privacy officer sign-off on the group size rule.

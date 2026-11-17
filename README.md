@@ -15,10 +15,10 @@ An HR analytics toolkit for a **fictional** company, Laurentian Financial Group 
 | Flow 1: HR data request with approval (SharePoint, Approvals, Outlook, Try/Catch error scope) | **Built and tested in a Microsoft 365 tenant.** Approve and reject paths ran Succeeded; a real first-run failure was caught by the Catch scope and fixed (see `docs/04_results.md`) |
 | Flows 2 and 3 (weekly digest, threshold alert) | **Designed** (`flows/`). Not built yet |
 | SharePoint list and Excel KPI table | **Built in the tenant**, Excel checked against the reference numbers |
-| Copilot Studio agent (instructions, knowledge, 25 test prompts) | **Designed**, build in progress. Not evaluated yet |
+| Copilot Studio agent "HR Metrics Assistant" (instructions, 3 knowledge sources, 25 test prompts) | **Built in Copilot Studio and evaluated in the test chat.** 19 of 25 prompts run, all pass after two documented knowledge fixes. The 6 request-action prompts (T18 to T23) are not run yet because the action is not built |
 | Governance, requirements, evaluation plan | **Done** |
 | Consulting layer: discovery and process maps, adoption plan, value measurement, UAT script, executive briefing | **Done** (`docs/05` to `docs/09`) |
-| Results | **Partly completed**: Flow 1 runs and the first failure are recorded in `docs/04_results.md`; agent results to be completed |
+| Results | Flow 1 runs, agent evaluation, failures and fixes recorded in `docs/04_results.md` |
 
 Nothing below claims a flow, report or agent result that has not been observed. See [Limitations](#honest-limitations).
 
@@ -163,7 +163,9 @@ Plan and thresholds were written before any testing: `docs/03_evaluation.md`, `a
 | Flow triggers without explicit confirmation | 0 |
 | Correct numbers on all metric questions | 100% |
 
-**Results: to be completed** (`docs/04_results.md`). They will be added after running the prompts in the Copilot Studio test chat, including what failed first and how it was fixed.
+**Results (2026-11-17, Copilot Studio test chat):** 19 of 25 prompts run. All 7 metric questions returned the reference number with definition and source; suppression held in 3 of 3; all individual-data and scope questions were refused. No individual data was disclosed in any run. Four prompts failed on the first run with the platform's generic fallback, and passed after two fixes to the knowledge (see below). The 6 request-action prompts are not run yet.
+
+**What failed first.** With "ungrounded responses" switched off (so the agent cannot answer from general knowledge), refusals written only in the instructions were blocked by the platform and replaced with "I'm not sure how to help with that." The fix kept the strict setting and added an approved **privacy and scope policy** as a knowledge source (`agent/knowledge/assistant_policy.md`), then rewrote it with example questions so retrieval matched how people actually ask. Full detail, deviations from the test plan, and screenshots: `docs/04_results.md`.
 
 ## Power BI report
 
@@ -193,7 +195,7 @@ The exported solution will be unpacked with the Power Platform CLI into `solutio
 - **Time to fill** counts to the start date and is biased low for the most recent period, because slow requisitions are still open.
 - **Group size rule limits.** It protects small populations, not small event counts in groups just above 5.
 - **No integration with SAP SuccessFactors** or any real HR system.
-- **Tenant verification is partial.** Executed: Python reference calculation and tests, Excel checks against the reference (Operations 0.375469, Marketing 0.470588), Flow 1 approve and reject runs. Not yet run: Flows 2 and 3, the Copilot Studio agent evaluation, the Power BI report.
+- **Tenant verification is partial.** Executed: Python reference calculation and tests, Excel checks against the reference (Operations 0.375469, Marketing 0.470588), Flow 1 approve and reject runs, agent evaluation on 19 of 25 prompts (one run each). Not yet run: the agent's request action (T18 to T23), Flows 2 and 3, the Power BI report, solution export.
 
 ## Repository structure
 
