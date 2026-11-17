@@ -167,6 +167,62 @@ Plan and thresholds were written before any testing: `docs/03_evaluation.md`, `a
 
 **What failed first.** With "ungrounded responses" switched off (so the agent cannot answer from general knowledge), refusals written only in the instructions were blocked by the platform and replaced with "I'm not sure how to help with that." The fix kept the strict setting and added an approved **privacy and scope policy** as a knowledge source (`agent/knowledge/assistant_policy.md`), then rewrote it with example questions so retrieval matched how people actually ask. Full detail, deviations from the test plan, and screenshots: `docs/04_results.md`.
 
+## See it in action
+
+Screenshots from the Copilot Studio test chat (2026-11-17) and the Power Automate runs (2026-11-16). Synthetic data. Full results: `docs/04_results.md`.
+
+### The agent answers from approved data, with the definition and source
+
+![Voluntary turnover in Operations: 37.5%, with definition and source](docs/images/agent_T01.png)
+
+Same rules in French, including the decimal comma, and it says which period it chose when none was given:
+
+![French answer: absence rate in Quebec City 2,1 %](docs/images/agent_T02_fr.png)
+
+### How it reasons (Copilot Studio activity view)
+
+The activity view shows each step the agent took. For a metric question it narrows the query to the approved files only, retrieves the matching line from KPI facts and the definition from Metric definitions, checks the policy file without using it, and writes the answer from the retrieved text. The rationale lists the steps: identify the metric, locate the data point, extract and confirm the value.
+
+![Activity view: refined query, sources retrieved, rationale, final answer](docs/images/agent_reasoning_metric.png)
+
+For a question about a named person, the same view shows a refusal grounded in the privacy and scope policy (citation 1), with an aggregate alternative:
+
+![Activity view: refusal for a named employee](docs/images/agent_activity_refusal.png)
+
+### It protects small groups and refuses to back out hidden values
+
+![Legal in Quebec City: not enough data](docs/images/agent_T10_suppression.png)
+
+![Refuses to do the subtraction that would reveal a hidden group](docs/images/agent_T12_no_inference.png)
+
+### It refuses questions about people, and offers an aggregate instead
+
+![Refuses to confirm whether a named person resigned](docs/images/agent_T14_after_fix.png)
+
+![Refuses to name a manager, gives the department turnover instead](docs/images/agent_T16.png)
+
+### It stays in scope
+
+![Will not search the web](docs/images/agent_T24_after_fix.png)
+
+![Salary is not covered by its sources](docs/images/agent_T25_after_fix.png)
+
+### What failed first, and the fix
+
+With general knowledge switched off, the first version could not ground its refusals, so the platform replaced them with a generic fallback. Nothing leaked, but the answer was not useful:
+
+![Before: generic fallback](docs/images/agent_T13_first_failure.png)
+
+After adding an approved privacy and scope policy as a knowledge source, the same question gets a grounded refusal that cites the policy:
+
+![After: grounded refusal citing the policy](docs/images/agent_T13_after_fix.png)
+
+### The request flow: approval, status tracking and error handling
+
+![Flow 1 approve run: all steps succeeded, Catch skipped](docs/images/flow1_run_approve.png)
+
+![SharePoint list showing Delivered, Rejected with reason, and Error from the first failed run](docs/images/03_sharepoint_list.png)
+
 ## Power BI report
 
 **To be completed.** The model, measures and page specification are ready (`powerbi/`). The report will be checked against `data/reference_kpis.csv`, and screenshots added to `docs/images/`.
